@@ -94,7 +94,31 @@ app.get("/students/search", async function (request, response, next) {
         // 3. minScore가 maxScore보다 크면 400으로 응답합니다.
         // 4. 조건에 맞는 학생을 SELECT로 조회합니다.
         // 5. rows를 response.json(rows)로 응답합니다.
-        sendTodo(response, "GET /students/search");
+
+        const min = Number(request.query.minScore);
+        const max = Number(request.query.maxScore);
+        
+        if(!Number.isInteger(min) || !Number.isInteger(max)){
+            response.status(400).json({
+                message: "minScore와 maxScore는 숫자여야 합니다.",
+            });
+            return;
+        }
+
+        if(min > max){
+            response.status(400).json({
+                message: "minScore는 maxScore보다 클 수 없습니다.",
+            });
+            return;            
+        }
+
+        const [rows] = await pool.query(
+            "SELECT * FROM students WHERE score >= ? AND score <= ?",
+            [min,max]
+        );
+
+        response.json(rows)
+        //sendTodo(response, "GET /students/search");
     } catch (error) {
         next(error);
     }
