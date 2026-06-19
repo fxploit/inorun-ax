@@ -194,7 +194,19 @@ app.patch("/students/:id", async function (request, response, next) {
         // 3. readStudentBody(request.body)로 body를 검사합니다.
         // 4. UPDATE로 name, score를 수정합니다.
         // 5. 수정된 학생을 다시 조회해서 응답합니다.
-        sendTodo(response, "PATCH /students/:id");
+
+        const id = Number(request.params.id);
+        const data = await findStudentById(id);
+        const editdata = readStudentBody(request.body);
+
+        await pool.query(
+            "UPDATE students SET name = ?, score = ? WHERE id = ?",
+            [editdata.name, editdata.score, id]
+        );
+
+        const result = await findStudentById(id);
+        response.json(result)
+        //sendTodo(response, "PATCH /students/:id");
     } catch (error) {
         next(error);
     }
