@@ -106,7 +106,12 @@ app.get("/students", async function (request, response, next) {
         // 1. students table에서 id, name, score를 조회합니다.
         // 2. id 오름차순으로 정렬합니다.
         // 3. rows를 response.json(rows)로 응답합니다.
-        sendTodo(response, "GET /students");
+
+        const [rows] = await pool.query(
+            "SELECT id, name, score FROM students order by id asc"
+    );
+        response.json(rows);
+        //sendTodo(response, "GET /students");
     } catch (error) {
         next(error);
     }
@@ -121,6 +126,14 @@ app.post("/students", async function (request, response, next) {
         // 4. result.insertId로 새 학생 id를 확인합니다.
         // 5. findStudentById(id)로 새 학생을 다시 조회합니다.
         // 6. status 201과 함께 새 학생 객체를 응답합니다.
+
+        // if (!Number.isInteger(id)) {
+        //     response.status(400).json({
+        //         message: "학생을 찾을 수 없습니다.",
+        //     });
+        //     return;
+        // }
+
         sendTodo(response, "POST /students");
     } catch (error) {
         next(error);
