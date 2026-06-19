@@ -162,7 +162,6 @@ app.get("/students/:id", async function (request, response, next) {
         // 5. 학생 객체를 응답합니다.
 
         const id = Number(request.params.id);
-
         if (!Number.isInteger(id)) {
             response.status(400).json({
                 message: "id는 숫자여야 합니다.",
@@ -171,7 +170,6 @@ app.get("/students/:id", async function (request, response, next) {
         }
 
         const rows = await findStudentById(id);
-
         if (!rows){
             response.status(404).json({
                 message: "학생을 찾을 수 없습니다.",
@@ -196,7 +194,21 @@ app.patch("/students/:id", async function (request, response, next) {
         // 5. 수정된 학생을 다시 조회해서 응답합니다.
 
         const id = Number(request.params.id);
+        if (!Number.isInteger(id)) {
+            response.status(400).json({
+                message: "id는 숫자여야 합니다.",
+            });
+            return;
+        }
+
         const data = await findStudentById(id);
+        if (!data){
+            response.status(404).json({
+                message: "학생을 찾을 수 없습니다.",
+            });
+            return;
+        }
+
         const editdata = readStudentBody(request.body);
 
         await pool.query(
@@ -220,7 +232,33 @@ app.delete("/students/:id", async function (request, response, next) {
         // 3. 학생이 없으면 404로 응답합니다.
         // 4. DELETE로 삭제합니다.
         // 5. 삭제 메시지와 삭제된 학생 객체를 응답합니다.
-        sendTodo(response, "DELETE /students/:id");
+
+        const id = Number(request.params.id);
+        if (!Number.isInteger(id)) {
+            response.status(400).json({
+                message: "id는 숫자여야 합니다.",
+            });
+            return;
+        }
+
+        const data = await findStudentById(id);
+        if (!data){
+            response.status(404).json({
+                message: "학생을 찾을 수 없습니다.",
+            });
+            return;
+        }
+
+        await pool.query(
+            "DELETE FROM students WHERE id = ?",
+            [id]
+        );
+
+        response.json({
+            message: "학생을 삭제했습니다.",
+            student: data,
+        });
+        //sendTodo(response, "DELETE /students/:id");
     } catch (error) {
         next(error);
     }
