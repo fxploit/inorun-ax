@@ -127,13 +127,6 @@ app.post("/students", async function (request, response, next) {
         // 5. findStudentById(id)로 새 학생을 다시 조회합니다.
         // 6. status 201과 함께 새 학생 객체를 응답합니다.
 
-        // if (!Number.isInteger(id)) {
-        //     response.status(400).json({
-        //         message: "학생을 찾을 수 없습니다.",
-        //     });
-        //     return;
-        // }
-
         sendTodo(response, "POST /students");
     } catch (error) {
         next(error);
@@ -148,7 +141,27 @@ app.get("/students/:id", async function (request, response, next) {
         // 3. findStudentById(id)로 학생을 조회합니다.
         // 4. 학생이 없으면 404로 응답합니다.
         // 5. 학생 객체를 응답합니다.
-        sendTodo(response, "GET /students/:id");
+
+        const id = Number(request.params.id);
+
+        if (!Number.isInteger(id)) {
+            response.status(400).json({
+                message: "id는 숫자여야 합니다.",
+            });
+            return;
+        }
+
+        const rows = await findStudentById(id);
+
+        if (!rows){
+            response.status(404).json({
+                message: "학생을 찾을 수 없습니다.",
+            });
+            return;
+        }
+
+        response.json(rows);
+        //sendTodo(response, "GET /students/:id");
     } catch (error) {
         next(error);
     }
