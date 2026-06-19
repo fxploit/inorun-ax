@@ -109,7 +109,8 @@ app.get("/students", async function (request, response, next) {
 
         const [rows] = await pool.query(
             "SELECT id, name, score FROM students order by id asc"
-    );
+        );
+
         response.json(rows);
         //sendTodo(response, "GET /students");
     } catch (error) {
@@ -127,7 +128,25 @@ app.post("/students", async function (request, response, next) {
         // 5. findStudentById(id)로 새 학생을 다시 조회합니다.
         // 6. status 201과 함께 새 학생 객체를 응답합니다.
 
-        sendTodo(response, "POST /students");
+        const data = readStudentBody(request.body);
+
+        if(!data){
+            response.status(400).json({
+                message: "name은 1자 이상 50자 이하이고, score는 0부터 100 사이의 정수여야 합니다.",
+            });
+            return;
+        }
+
+        const [rows] = await pool.query(
+            "INSERT INTO students (name, score) VALUES (?, ?);",
+            [data.name, data.score]
+        );
+
+        const newid = rows.insertId;
+        const newdata = await findStudentById(newid);
+
+        response.status(211).json(newdata);
+        //sendTodo(response, "POST /students");
     } catch (error) {
         next(error);
     }
